@@ -1,0 +1,100 @@
+{
+  "users": {
+    "942755385": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6048265605": {
+      "referrals": [
+        6918857834,
+        7754061268,
+        6626969793,
+        7358016118,
+        7570060330,
+        6281233904,
+        6904186226,
+        6288204070,
+        942755385
+      ],
+      "balance": "0333333333",
+      "hasWithdrawn": false
+    },
+    "6994528708": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false
+    },
+    "6918857834": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "7754061268": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6626969793": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "7358016118": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "7570060330": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6281233904": {
+      "referrals": [
+        6028564103,
+        6050195747,
+        6751666708
+      ],
+      "balance": "0333",
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6904186226": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6028564103": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6281233904"
+    },
+    "6050195747": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6281233904"
+    },
+    "6288204070": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6048265605"
+    },
+    "6751666708": {
+      "referrals": [],
+      "balance": 0,
+      "hasWithdrawn": false,
+      "referredBy": "6281233904"
+    }
+  }
+}
