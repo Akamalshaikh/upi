@@ -22,6 +22,7 @@ const isAdmin = (userId) => admins.includes(userId.toString());
 // Check channel membership
 const checkMembership = async (userId) => {
   for (const channel of channels) {
+    if (channel.type === 'folder') continue; // Skip folder checks
     try {
       const member = await bot.getChatMember(channel.id, userId);
       if (!['member', 'administrator', 'creator'].includes(member.status)) {
@@ -37,7 +38,7 @@ const checkMembership = async (userId) => {
 // Generate join keyboard
 const getJoinKeyboard = () => {
   const keyboard = channels.map(channel => [{
-    text: '🔗 Join Channel',
+    text: channel.type === 'folder' ? '📁 Join Folder' : '🔗 Join Channel',
     url: channel.link
   }]);
   keyboard.push([{ text: '✅ Joined', callback_data: 'check_join' }]);
@@ -53,6 +54,13 @@ const getMainMenuKeyboard = (userId) => {
       [{ text: '💰 Withdraw', callback_data: 'withdraw' }]
     ]
   };
+};
+
+// Calculate user balance (with safety checks)
+const calculateUserBalance = (user) => {
+  const referralCount = user.referrals.length;
+  const maxBalance = Math.min(referralCount * Number(process.env.PER_REFER_AMOUNT), Number(process.env.MIN_WITHDRAW));
+  return maxBalance;
 };
 
 // Start command
@@ -71,7 +79,7 @@ bot.onText(/\/start(?:\s+(\d+))?/, async (msg, match) => {
     // Credit referrer if exists
     if (referrerId && referrerId !== userId.toString() && users[referrerId]) {
       users[referrerId].referrals.push(userId);
-      users[referrerId].balance += process.env.PER_REFER_AMOUNT;
+      users[referrerId].balance = calculateUserBalance(users[referrerId]);
       saveData();
       
       // Notify referrer
@@ -116,7 +124,8 @@ bot.on('callback_query', async (query) => {
     }
   } else if (query.data === 'my_invites') {
     const user = users[userId] || { referrals: [], balance: 0 };
-    const invitesMessage = `👥 Total Referrals: ${user.referrals.length}\n💰 Balance: ${user.balance} INR`;
+    const balance = calculateUserBalance(user);
+    const invitesMessage = `👥 Total Referrals: ${user.referrals.length}\n💰 Balance: ${balance} INR`;
     await bot.sendMessage(userId, invitesMessage);
   } else if (query.data === 'withdraw') {
     const user = users[userId];
@@ -124,7 +133,8 @@ bot.on('callback_query', async (query) => {
       await bot.sendMessage(userId, '❌ Your withdrawal limit is over.');
       return;
     }
-    if (user.balance >= process.env.MIN_WITHDRAW) {
+    const balance = calculateUserBalance(user);
+    if (balance >= process.env.MIN_WITHDRAW) {
       await bot.sendMessage(userId, '📲 Please DM @Its_soloy for withdrawal.');
       user.hasWithdrawn = true;
       saveData();
@@ -139,7 +149,7 @@ bot.onText(/\/adminpanel/, async (msg) => {
   const userId = msg.from.id;
   if (!isAdmin(userId)) return;
 
-  const adminMenu = `🔧 Admin Panel\n\nCommands:\n/addchannel [channelId] [link]\n/deletechannel [channelId]\n/addadmin [userId]\n/broadcast [message]`;
+  const adminMenu = `🔧 Admin Panel\n\nCommands:\n/addchannel [channelId] [link]\n/addfolder [link]\n/deletechannel [channelId]\n/addadmin [userId]\n/broadcast [message]`;
   await bot.sendMessage(userId, adminMenu);
 });
 
@@ -149,9 +159,19 @@ bot.onText(/\/addchannel (.+) (.+)/, async (msg, match) => {
 
   const channelId = match[1];
   const link = match[2];
-  channels.push({ id: channelId, link });
+  channels.push({ id: channelId, link, type: 'channel' });
   saveData();
   await bot.sendMessage(userId, '✅ Channel added successfully!');
+});
+
+bot.onText(/\/addfolder (.+)/, async (msg, match) => {
+  const userId = msg.from.id;
+  if (!isAdmin(userId)) return;
+
+  const link = match[1];
+  channels.push({ id: Date.now().toString(), link, type: 'folder' });
+  saveData();
+  await bot.sendMessage(userId, '✅ Folder added successfully!');
 });
 
 bot.onText(/\/deletechannel (.+)/, async (msg, match) => {
@@ -161,6 +181,18 @@ bot.onText(/\/deletechannel (.+)/, async (msg, match) => {
   const channelId = match[1];
   channels = channels.filter(channel => channel.id !== channelId);
   saveData();
+  
+  // Update all users' view by sending them the updated join keyboard
+  for (const userId of Object.keys(users)) {
+    try {
+      await bot.sendMessage(userId, '⚠️ Channel list has been updated. Please verify your membership:', {
+        reply_markup: getJoinKeyboard()
+      });
+    } catch (err) {
+      console.log(`Failed to update view for user ${userId}`);
+    }
+  }
+  
   await bot.sendMessage(userId, '✅ Channel deleted successfully!');
 });
 
