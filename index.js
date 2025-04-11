@@ -181,7 +181,7 @@ bot.onText(/\/deletechannel (.+)/, async (msg, match) => {
   const channelId = match[1];
   channels = channels.filter(channel => channel.id !== channelId);
   saveData();
-  
+
   // Update all users' view by sending them the updated join keyboard
   for (const userId of Object.keys(users)) {
     try {
@@ -192,7 +192,7 @@ bot.onText(/\/deletechannel (.+)/, async (msg, match) => {
       console.log(`Failed to update view for user ${userId}`);
     }
   }
-  
+
   await bot.sendMessage(userId, '✅ Channel deleted successfully!');
 });
 
